@@ -223,6 +223,29 @@ pub fn ensure_service_config(
     Ok(Some(path))
 }
 
+/// 读取服务配置文件中当前生效的端口（与可视化表单展示的值保持同一套解析）
+pub fn read_service_port(
+    config_kind: Option<&str>,
+    app_dir: &Path,
+    conf_dir: &Path,
+    data_dir: &Path,
+    default_port: u16,
+) -> Option<u16> {
+    let path = service_config_path(config_kind, app_dir, conf_dir, data_dir)?;
+    let content = fs::read_to_string(path).ok()?;
+    let port = match parse_visual_config(config_kind, &content, default_port)? {
+        VisualConfig::Mysql { port, .. }
+        | VisualConfig::Redis { port, .. }
+        | VisualConfig::Nginx { port, .. }
+        | VisualConfig::Nacos { port, .. }
+        | VisualConfig::Postgres { port, .. }
+        | VisualConfig::Tomcat { port, .. }
+        | VisualConfig::MongoDb { port, .. }
+        | VisualConfig::Mailpit { port, .. } => port,
+    };
+    port.trim().parse::<u16>().ok().filter(|p| *p > 0)
+}
+
 fn replace_nginx_listen_port(line: &str, new_port: u16) -> String {
     let indent: String = line.chars().take_while(|c| c.is_whitespace()).collect();
     let body = line.trim().trim_end_matches(';').trim();
@@ -2042,6 +2065,30 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn read_service_port_returns_custom_port_from_disk() {
+        let base = std::env::temp_dir().join(format!("moka-port-test-{}", std::process::id()));
+        let app = base.join("apps/test");
+        let conf = base.join("conf/test");
+        let data = base.join("data/test");
+        for kind in [
+            "mysql", "redis", "nginx", "nacos", "postgres", "tomcat", "mongodb", "mailpit",
+        ] {
+            let tpl = default_service_config_content(Some(kind), &app, &data, 3310)
+                .unwrap_or_else(|| panic!("missing default template for {kind}"));
+            let path = service_config_path(Some(kind), &app, &conf, &data).unwrap();
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(&path, &tpl).unwrap();
+            assert_eq!(
+                read_service_port(Some(kind), &app, &conf, &data, 80),
+                Some(3310),
+                "{kind} 应从配置文件读出自定义端口"
+            );
+        }
+        assert_eq!(read_service_port(None, &app, &conf, &data, 80), None);
+        let _ = fs::remove_dir_all(&base);
     }
 
     #[test]

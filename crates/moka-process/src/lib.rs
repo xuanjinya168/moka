@@ -1082,6 +1082,9 @@ pub fn restore_database(
                 &port.to_string(),
                 "-U",
                 "postgres",
+                // psql 默认遇到 SQL 错误会跳过继续并以 0 退出，必须让它遇错即停
+                "-v",
+                "ON_ERROR_STOP=1",
                 "-f",
                 &sql_file.to_string_lossy(),
             ]);
