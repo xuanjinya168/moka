@@ -16,8 +16,9 @@ use eframe::egui::{
 use moka_config::{
     apply_visual_config, config_format_label, default_service_config_content, ensure_local_root_ca,
     ensure_service_config, format_and_validate_config, generate_aliyun_maven_settings,
-    generate_local_ssl_cert, inspect_dev_mirrors, parse_visual_config, set_dev_mirror,
-    sync_nginx_vhosts, DevMirrorKind, DevMirrorState, SiteConfig, SiteProxyRule, VisualConfig,
+    generate_local_ssl_cert, inspect_dev_mirrors, parse_visual_config, read_service_port,
+    set_dev_mirror, sync_nginx_vhosts, DevMirrorKind, DevMirrorState, SiteConfig, SiteProxyRule,
+    VisualConfig,
 };
 use moka_core::downloader::{download_and_extract_cancellable, DownloadProgress};
 use moka_core::manifest::{
@@ -125,6 +126,7 @@ struct SharedAsyncState {
     toolbox_loading: bool,
     latest_ports: Option<Vec<PortOccupancy>>,
     latest_hosts: Option<String>,
+    hosts_saved: Option<String>,
     catalog_updating: bool,
     update_checking: bool,
     update_result: Option<Result<ReleaseInfo, String>>,
@@ -485,9 +487,21 @@ impl MokaApp {
             app_settings.tray_style,
         );
 
+        // 启动时以配置文件里的端口为准，否则自定义端口会在下次启动时被 ensure_service_config 写回默认值
         let mut port_overrides = HashMap::new();
         for v in &initial_views {
-            if let Some(pt) = v.port {
+            let (_, _, running_port) = process_mgr.is_running(&v.manifest.id);
+            let configured_port = read_service_port(
+                v.manifest.config_kind.as_deref(),
+                &layout.app_dir(&v.manifest.id),
+                &layout.conf_dir(&v.manifest.id),
+                &layout.data_dir(&v.manifest.id),
+                v.manifest.default_port.unwrap_or(0),
+            );
+            let port = running_port
+                .or(configured_port)
+                .or(v.manifest.default_port);
+            if let Some(pt) = port {
                 port_overrides.insert(v.manifest.id.clone(), pt.to_string());
             }
         }
@@ -507,6 +521,7 @@ impl MokaApp {
                 toolbox_loading: false,
                 latest_ports: None,
                 latest_hosts: None,
+                hosts_saved: None,
                 catalog_updating: false,
                 update_checking: false,
                 update_result: None,
@@ -619,13 +634,12 @@ impl MokaApp {
         let new_content = render_hosts_file(&self.hosts_text, &self.host_entries);
         let shared = self.shared.clone();
         let layout = self.layout.clone();
-        self.hosts_dirty = false;
         self.rt.spawn_blocking(move || {
             let msg = match write_hosts_file(&new_content) {
                 Ok(()) => {
                     write_app_log(layout.root_path(), "INFO", "Windows Hosts 已保存生效");
                     if let Ok(mut s) = shared.lock() {
-                        s.latest_hosts = Some(new_content);
+                        s.hosts_saved = Some(new_content);
                     }
                     "Windows Hosts 已保存并生效".to_string()
                 }
@@ -1029,6 +1043,17 @@ impl MokaApp {
     fn trigger_toggle_service(&self, view: SoftwareStatusView, ctx: egui::Context) {
         let id = view.manifest.id.clone();
         let name = format!("{} {}", view.manifest.name, view.manifest.version);
+        if !view.running {
+            let typed = self
+                .port_overrides
+                .get(&id)
+                .map(|s| s.trim().to_string())
+                .unwrap_or_default();
+            if !typed.is_empty() && typed.parse::<u16>().ok().filter(|p| *p > 0).is_none() {
+                self.set_toast(format!("{name} 的端口无效，请输入 1 ~ 65535 之间的数字"));
+                return;
+            }
+        }
         let port = self.effective_port(&view);
         {
             let mut s = self.shared.lock().unwrap_or_else(|e| e.into_inner());
@@ -1746,6 +1771,7 @@ impl eframe::App for MokaApp {
             }
         }
         let mut need_rebuild_ports = false;
+        let mut hosts_draft_kept = false;
         let (downloads_snapshot, busy_snapshot, toast_snapshot, toolbox_loading, update_checking) = {
             let mut s = self.shared.lock().unwrap_or_else(|e| e.into_inner());
             if let Some(views) = s.latest_views.take() {
@@ -1756,10 +1782,19 @@ impl eframe::App for MokaApp {
                 self.toolbox_loaded = true;
                 need_rebuild_ports = true;
             }
-            if let Some(hosts) = s.latest_hosts.take() {
+            if let Some(hosts) = s.hosts_saved.take() {
                 self.host_entries = parse_hosts_entries(&hosts);
                 self.hosts_text = hosts;
                 self.hosts_dirty = false;
+            }
+            if let Some(hosts) = s.latest_hosts.take() {
+                // 有未保存的编辑时不能拿磁盘内容覆盖草稿
+                if self.hosts_dirty {
+                    hosts_draft_kept = true;
+                } else {
+                    self.host_entries = parse_hosts_entries(&hosts);
+                    self.hosts_text = hosts;
+                }
             }
             if let Some(upd) = s.update_result.take() {
                 self.update_status = Some(upd);
@@ -1800,6 +1835,9 @@ impl eframe::App for MokaApp {
             )
         };
 
+        if hosts_draft_kept {
+            self.set_toast("Hosts 有未保存的修改，已保留当前编辑内容");
+        }
         if need_rebuild_ports {
             self.rebuild_port_filter_cache();
         }

@@ -327,50 +327,9 @@ pub fn list_running_pids_under_apps(apps_dir: &Path) -> HashMap<String, u32> {
     let mut map = HashMap::new();
     #[cfg(target_os = "windows")]
     {
-        let root_str = apps_dir.to_string_lossy();
-        let escaped = root_str.replace('\'', "''");
-        let ps = format!(
-            "Get-CimInstance Win32_Process | Where-Object {{ \
-                $_.Name -ne 'moka.exe' -and $_.Name -ne 'powershell.exe' -and ( \
-                    ($_.ExecutablePath -and $_.ExecutablePath.IndexOf('{escaped}', [System.StringComparison]::OrdinalIgnoreCase) -ge 0) -or \
-                    ($_.CommandLine -and $_.CommandLine.IndexOf('{escaped}', [System.StringComparison]::OrdinalIgnoreCase) -ge 0) \
-                ) \
-            }} | ForEach-Object {{ \"$($_.ProcessId)|$($_.ExecutablePath)|$($_.CommandLine)\" }}"
-        );
-        if let Ok(out) = silent_cmd("powershell")
-            .args(["-NoProfile", "-Command", &ps])
-            .output()
-        {
-            if out.status.success() {
-                let root_lower = root_str.to_lowercase().replace('/', "\\");
-                let root_prefix = if root_lower.ends_with('\\') {
-                    root_lower
-                } else {
-                    format!("{root_lower}\\")
-                };
-                let text = String::from_utf8_lossy(&out.stdout);
-                for line in text.lines() {
-                    let mut parts = line.splitn(3, '|');
-                    let Some(pid) = parts.next().and_then(|s| s.trim().parse::<u32>().ok()) else {
-                        continue;
-                    };
-                    let exe = parts.next().unwrap_or("");
-                    let cmd = parts.next().unwrap_or("");
-                    for haystack in [exe, cmd] {
-                        let norm = haystack.to_lowercase().replace('/', "\\");
-                        if let Some(idx) = norm.find(&root_prefix) {
-                            let rest = &norm[idx + root_prefix.len()..];
-                            if let Some(svc_id) = rest
-                                .split(['\\', ' ', '"', '\''])
-                                .next()
-                                .filter(|s| !s.is_empty())
-                            {
-                                map.entry(svc_id.to_string()).or_insert(pid);
-                                break;
-                            }
-                        }
-                    }
-                }
+        for (pid, exe, cmd) in query_running_processes() {
+            if let Some(svc_id) = service_id_running_in(apps_dir, &exe, &cmd) {
+                map.entry(svc_id).or_insert(pid);
             }
         }
     }
@@ -379,6 +338,98 @@ pub fn list_running_pids_under_apps(apps_dir: &Path) -> HashMap<String, u32> {
         let _ = apps_dir;
     }
     map
+}
+
+#[cfg(target_os = "windows")]
+fn query_running_processes() -> Vec<(u32, String, String)> {
+    // PowerShell 重定向输出默认使用 OEM 代码页，显式切到 UTF-8 以免中文路径被解码成乱码
+    let ps = "[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; \
+        Get-CimInstance Win32_Process | Where-Object { \
+            $_.Name -ne 'moka.exe' -and $_.Name -ne 'powershell.exe' \
+        } | ForEach-Object { \"$($_.ProcessId)|$($_.ExecutablePath)|$($_.CommandLine)\" }";
+    let Ok(out) = silent_cmd("powershell")
+        .args(["-NoProfile", "-Command", ps])
+        .output()
+    else {
+        return Vec::new();
+    };
+    if !out.status.success() {
+        return Vec::new();
+    }
+    String::from_utf8_lossy(&out.stdout)
+        .lines()
+        .filter_map(|line| {
+            let mut parts = line.splitn(3, '|');
+            let pid = parts.next()?.trim().parse::<u32>().ok()?;
+            let exe = parts.next().unwrap_or("").to_string();
+            let cmd = parts.next().unwrap_or("").to_string();
+            Some((pid, exe, cmd))
+        })
+        .collect()
+}
+
+/// 进程的可执行文件或它实际启动的程序是否位于 `dir` 之下；命中时返回 `dir` 下第一级子目录名
+fn service_id_running_in(dir: &Path, exe: &str, cmdline: &str) -> Option<String> {
+    let prefix = normalize_path(&dir_prefix_with_sep(dir));
+    let exe = normalize_path(exe);
+    if let Some(id) = subdirectory_under(&exe, &prefix) {
+        return Some(id.to_string());
+    }
+    let program = launched_program(cmdline)?;
+    subdirectory_under(&program, &prefix).map(str::to_string)
+}
+
+fn normalize_path(p: &str) -> String {
+    let lower = p.trim().to_lowercase().replace('/', "\\");
+    lower.strip_prefix(r"\\?\").unwrap_or(&lower).to_string()
+}
+
+fn subdirectory_under<'a>(path: &'a str, prefix: &str) -> Option<&'a str> {
+    let id = path.strip_prefix(prefix)?.split('\\').next()?;
+    (!id.is_empty()).then_some(id)
+}
+
+fn split_command_line_tokens(line: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut cur = String::new();
+    let mut in_quotes = false;
+    for ch in line.chars() {
+        match ch {
+            '"' => in_quotes = !in_quotes,
+            c if c.is_whitespace() && !in_quotes => {
+                if !cur.is_empty() {
+                    tokens.push(std::mem::take(&mut cur));
+                }
+            }
+            c => cur.push(c),
+        }
+    }
+    if !cur.is_empty() {
+        tokens.push(cur);
+    }
+    tokens
+}
+
+/// 解析命令行实际启动的程序路径（小写、`/` 归一为 `\`），兼容 `cmd.exe /C <程序>` 包装。
+/// 只有程序本身算数，参数里出现某个路径不代表进程从那里启动。
+fn launched_program(cmdline: &str) -> Option<String> {
+    let tokens = split_command_line_tokens(cmdline);
+    let mut idx = 0;
+    let is_cmd_wrapper = tokens
+        .first()
+        .map(|t| {
+            t.rsplit(['\\', '/'])
+                .next()
+                .is_some_and(|name| name.eq_ignore_ascii_case("cmd.exe"))
+        })
+        .unwrap_or(false);
+    if is_cmd_wrapper {
+        idx = 1;
+        while tokens.get(idx).is_some_and(|t| t.starts_with('/')) {
+            idx += 1;
+        }
+    }
+    tokens.get(idx).map(|t| normalize_path(t))
 }
 
 /// 设置或取消 Windows 当前用户开机自启（写入 HKCU\...\Run，无需管理员权限）
@@ -855,19 +906,16 @@ fn dir_prefix_with_sep(dir: &Path) -> String {
 pub fn stop_processes_in_dir(dir: &Path) {
     #[cfg(target_os = "windows")]
     {
-        let prefix = dir_prefix_with_sep(dir);
-        let escaped = prefix.replace('\'', "''");
-        let ps = format!(
-            "Get-CimInstance Win32_Process | Where-Object {{ \
-                $_.Name -ne 'moka.exe' -and $_.Name -ne 'powershell.exe' -and ( \
-                    ($_.ExecutablePath -and $_.ExecutablePath.StartsWith('{escaped}', [System.StringComparison]::OrdinalIgnoreCase)) -or \
-                    ($_.CommandLine -and $_.CommandLine.IndexOf('{escaped}', [System.StringComparison]::OrdinalIgnoreCase) -ge 0) \
-                ) \
-            }} | ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }}"
-        );
-        let _ = silent_cmd("powershell")
-            .args(["-NoProfile", "-Command", &ps])
-            .status();
+        for (pid, exe, cmd) in query_running_processes() {
+            if service_id_running_in(dir, &exe, &cmd).is_some() {
+                // 连同子进程树一起结束，保证 cmd.exe 拉起的 java（Nacos / Tomcat）不会成为孤儿
+                let _ = silent_cmd("taskkill")
+                    .args(["/PID", &pid.to_string(), "/T", "/F"])
+                    .stdout(std::process::Stdio::null())
+                    .stderr(std::process::Stdio::null())
+                    .status();
+            }
+        }
     }
     #[cfg(not(target_os = "windows"))]
     {
@@ -964,5 +1012,63 @@ mod tests {
         assert_eq!(short, r"C:\Moka\apps\node-2\");
         assert!(r"C:\Moka\apps\node-2\node.exe".starts_with(&short));
         assert!(!r"C:\Moka\apps\node-20\node.exe".starts_with(&short));
+    }
+
+    #[test]
+    fn launched_program_handles_quotes_and_cmd_wrapper() {
+        assert_eq!(
+            launched_program(r#""C:\Moka Runtime\apps\redis-7.2\redis-server.exe" "a b.conf""#).as_deref(),
+            Some(r"c:\moka runtime\apps\redis-7.2\redis-server.exe")
+        );
+        assert_eq!(
+            launched_program(
+                r#"cmd.exe /C "C:\Moka/apps/nacos-2.4/bin/startup.cmd" -m standalone"#
+            )
+            .as_deref(),
+            Some(r"c:\moka\apps\nacos-2.4\bin\startup.cmd")
+        );
+        assert_eq!(launched_program(r"cmd.exe /K cd /d C:\Moka\apps\mysql-8.0\bin").as_deref(), Some("cd"));
+        assert_eq!(launched_program(""), None);
+    }
+
+    #[test]
+    fn process_is_attributed_only_by_what_it_launches() {
+        let apps = Path::new(r"C:\Moka\apps");
+        // 服务本体：按可执行文件路径命中，且目录名前缀相同也不会串号
+        assert_eq!(
+            service_id_running_in(apps, r"C:\Moka\apps\mysql-8.0\bin\mysqld.exe", "").as_deref(),
+            Some("mysql-8.0")
+        );
+        assert_eq!(
+            service_id_running_in(
+                apps,
+                r"C:\Windows\System32\cmd.exe",
+                r#"cmd.exe /C C:\Moka\apps/nacos-2.4/bin/startup.cmd -m standalone"#
+            )
+            .as_deref(),
+            Some("nacos-2.4")
+        );
+        // 仅在参数里提到 apps 下的路径：编辑器、终端、带 -D 参数的 java 都不算
+        assert_eq!(
+            service_id_running_in(
+                apps,
+                r"C:\VSCode\Code.exe",
+                r#""C:\VSCode\Code.exe" C:\Moka\apps\mysql-8.0\conf\my.ini"#
+            ),
+            None
+        );
+        assert_eq!(
+            service_id_running_in(
+                apps,
+                r"C:\Java\bin\java.exe",
+                r"java.exe -Dnacos.home=C:\Moka\apps\nacos-2.4 -m standalone"
+            ),
+            None
+        );
+        // 目录边界：清理 apps\node-2 时不能波及 apps\node-20
+        assert_eq!(
+            service_id_running_in(Path::new(r"C:\Moka\apps\node-2"), r"C:\Moka\apps\node-20\node.exe", "").as_deref(),
+            None
+        );
     }
 }
