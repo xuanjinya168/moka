@@ -1,0 +1,432 @@
+[
+  {
+    "id": "node-22",
+    "category": "runtime",
+    "name": "Node.js",
+    "version": "22.14.0 LTS",
+    "description": "当前最新 LTS 长期支持版，适合 Vue / React / Next.js / Vite 全栈开发",
+    "mirrors_cn": [
+      "https://cdn.npmmirror.com/binaries/node/v22.14.0/node-v22.14.0-win-x64.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/v22.14.0/node-v22.14.0-win-x64.zip"
+    ],
+    "mirrors": [
+      "https://nodejs.org/dist/v22.14.0/node-v22.14.0-win-x64.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "node"
+  },
+  {
+    "id": "node-20",
+    "category": "runtime",
+    "name": "Node.js",
+    "version": "20.19.0 LTS",
+    "description": "稳定维护 LTS 版本，兼容绝大多数现有前端与 Node 后端项目",
+    "mirrors_cn": [
+      "https://cdn.npmmirror.com/binaries/node/v20.19.0/node-v20.19.0-win-x64.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/nodejs-release/v20.19.0/node-v20.19.0-win-x64.zip"
+    ],
+    "mirrors": [
+      "https://nodejs.org/dist/v20.19.0/node-v20.19.0-win-x64.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "node"
+  },
+  {
+    "id": "go-1.24",
+    "category": "runtime",
+    "name": "Go",
+    "version": "1.24.1",
+    "description": "云原生与高并发后端主力语言，绿色免安装一键切换 GOROOT",
+    "mirrors_cn": [
+      "https://golang.google.cn/dl/go1.24.1.windows-amd64.zip",
+      "https://mirrors.aliyun.com/golang/go1.24.1.windows-amd64.zip"
+    ],
+    "mirrors": [
+      "https://go.dev/dl/go1.24.1.windows-amd64.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "go"
+  },
+  {
+    "id": "python-3.12",
+    "category": "runtime",
+    "name": "Python",
+    "version": "3.12.9",
+    "description": "轻量绿色嵌入式 Windows 版，适合脚本自动化、AI 工具与 Web 后端",
+    "mirrors_cn": [
+      "https://cdn.npmmirror.com/binaries/python/3.12.9/python-3.12.9-embed-amd64.zip",
+      "https://mirrors.huaweicloud.com/python/3.12.9/python-3.12.9-embed-amd64.zip"
+    ],
+    "mirrors": [
+      "https://www.python.org/ftp/python/3.12.9/python-3.12.9-embed-amd64.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "python"
+  },
+  {
+    "id": "jdk-21",
+    "category": "runtime",
+    "name": "OpenJDK (Temurin)",
+    "version": "21 LTS",
+    "description": "Java LTS 长期支持版，推荐 Spring Boot 3.x / 虚拟线程开发",
+    "mirrors_cn": [
+      "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/21/jdk/x64/windows/OpenJDK21U-jdk_x64_windows_hotspot_21.0.6_7.zip"
+    ],
+    "mirrors": [
+      "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "jdk"
+  },
+  {
+    "id": "jdk-17",
+    "category": "runtime",
+    "name": "OpenJDK (Temurin)",
+    "version": "17 LTS",
+    "description": "Java LTS 长期支持版，Spring Boot 3 最低要求版本",
+    "mirrors_cn": [
+      "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/17/jdk/x64/windows/OpenJDK17U-jdk_x64_windows_hotspot_17.0.14_7.zip"
+    ],
+    "mirrors": [
+      "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "jdk"
+  },
+  {
+    "id": "jdk-8",
+    "category": "runtime",
+    "name": "OpenJDK (Temurin)",
+    "version": "8 LTS",
+    "description": "经典 Java LTS 版本，兼容传统 Spring Boot 2.x 与老项目",
+    "mirrors_cn": [
+      "https://mirrors.tuna.tsinghua.edu.cn/Adoptium/8/jdk/x64/windows/OpenJDK8U-jdk_x64_windows_hotspot_8u442b06.zip"
+    ],
+    "mirrors": [
+      "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u462-b08/OpenJDK8U-jdk_x64_windows_hotspot_8u462b08.zip",
+      "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u442-b06/OpenJDK8U-jdk_x64_windows_hotspot_8u442b06.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "jdk"
+  },
+  {
+    "id": "maven-3.9",
+    "category": "build_tool",
+    "name": "Apache Maven",
+    "version": "3.9.9",
+    "description": "Java 构建与依赖管理工具，安装后自动生成阿里云镜像源 settings.xml",
+    "mirrors_cn": [
+      "https://mirrors.huaweicloud.com/apache/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip"
+    ],
+    "mirrors": [
+      "https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "maven"
+  },
+  {
+    "id": "gradle-8.12",
+    "category": "build_tool",
+    "name": "Gradle",
+    "version": "8.12.1",
+    "description": "现代化 JVM / Kotlin / Android 构建工具，免安装绿色解压并支持软链秒切",
+    "mirrors_cn": [
+      "https://mirrors.cloud.tencent.com/gradle/gradle-8.12.1-bin.zip"
+    ],
+    "mirrors": [
+      "https://services.gradle.org/distributions/gradle-8.12.1-bin.zip"
+    ],
+    "default_port": null,
+    "is_service": false,
+    "env_link_name": "gradle"
+  },
+  {
+    "id": "mysql-8.4",
+    "category": "database",
+    "name": "MySQL",
+    "version": "8.4.4 LTS",
+    "description": "最新 MySQL LTS 长期支持版，性能与安全性全面升级（默认端口 3308）",
+    "mirrors_cn": [
+      "https://mirrors.huaweicloud.com/mysql/Downloads/MySQL-8.4/mysql-8.4.4-winx64.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/mysql/downloads/MySQL-8.4/mysql-8.4.4-winx64.zip"
+    ],
+    "mirrors": [
+      "https://cdn.mysql.com/archives/mysql-8.4/mysql-8.4.4-winx64.zip"
+    ],
+    "default_port": 3308,
+    "is_service": true,
+    "config_kind": "mysql",
+    "init_cmd": {
+      "program": "{{app_dir}}/bin/mysqld.exe",
+      "args": ["--defaults-file={{conf_file}}", "--initialize-insecure"]
+    },
+    "start_cmd": {
+      "program": "{{app_dir}}/bin/mysqld.exe",
+      "args": ["--defaults-file={{conf_file}}", "--console"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/bin/mysqladmin.exe",
+      "args": ["-u", "root", "-P", "{{port}}", "shutdown"]
+    }
+  },
+  {
+    "id": "mysql-8.0",
+    "category": "database",
+    "name": "MySQL",
+    "version": "8.0.41",
+    "description": "主流关系型数据库，支持窗口函数、CTE 与 UTF8MB4 默认编码",
+    "mirrors_cn": [
+      "https://mirrors.huaweicloud.com/mysql/Downloads/MySQL-8.0/mysql-8.0.41-winx64.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/mysql/downloads/MySQL-8.0/mysql-8.0.41-winx64.zip"
+    ],
+    "mirrors": [
+      "https://cdn.mysql.com/archives/mysql-8.0/mysql-8.0.41-winx64.zip"
+    ],
+    "default_port": 3306,
+    "is_service": true,
+    "config_kind": "mysql",
+    "init_cmd": {
+      "program": "{{app_dir}}/bin/mysqld.exe",
+      "args": ["--defaults-file={{conf_file}}", "--initialize-insecure"]
+    },
+    "start_cmd": {
+      "program": "{{app_dir}}/bin/mysqld.exe",
+      "args": ["--defaults-file={{conf_file}}", "--console"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/bin/mysqladmin.exe",
+      "args": ["-u", "root", "-P", "{{port}}", "shutdown"]
+    }
+  },
+  {
+    "id": "mysql-5.7",
+    "category": "database",
+    "name": "MySQL",
+    "version": "5.7.44",
+    "description": "经典稳定版，适合维护老项目（默认端口 3307 避免与 8.0 冲突）",
+    "mirrors_cn": [
+      "https://mirrors.huaweicloud.com/mysql/Downloads/MySQL-5.7/mysql-5.7.44-winx64.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/mysql/downloads/MySQL-5.7/mysql-5.7.44-winx64.zip"
+    ],
+    "mirrors": [
+      "https://cdn.mysql.com/archives/mysql-5.7/mysql-5.7.44-winx64.zip"
+    ],
+    "default_port": 3307,
+    "is_service": true,
+    "config_kind": "mysql",
+    "init_cmd": {
+      "program": "{{app_dir}}/bin/mysqld.exe",
+      "args": ["--defaults-file={{conf_file}}", "--initialize-insecure"]
+    },
+    "start_cmd": {
+      "program": "{{app_dir}}/bin/mysqld.exe",
+      "args": ["--defaults-file={{conf_file}}", "--console"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/bin/mysqladmin.exe",
+      "args": ["-u", "root", "-P", "{{port}}", "shutdown"]
+    }
+  },
+  {
+    "id": "postgres-17",
+    "category": "database",
+    "name": "PostgreSQL",
+    "version": "17.4",
+    "description": "强大的现代开源关系型数据库，支持 JSONB、向量扩展与复杂事务（默认用户 postgres）",
+    "mirrors_cn": [
+      "https://get.enterprisedb.com/postgresql/postgresql-17.4-1-windows-x64-binaries.zip"
+    ],
+    "mirrors": [
+      "https://get.enterprisedb.com/postgresql/postgresql-17.4-1-windows-x64-binaries.zip"
+    ],
+    "default_port": 5432,
+    "is_service": true,
+    "config_kind": "postgres",
+    "init_cmd": {
+      "program": "{{app_dir}}/bin/initdb.exe",
+      "args": ["-D", "{{data_dir}}", "-U", "postgres", "-E", "UTF8", "--no-locale"]
+    },
+    "start_cmd": {
+      "program": "{{app_dir}}/bin/postgres.exe",
+      "args": ["-D", "{{data_dir}}", "-p", "{{port}}"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/bin/pg_ctl.exe",
+      "args": ["-D", "{{data_dir}}", "-m", "fast", "stop"]
+    }
+  },
+  {
+    "id": "mariadb-11.4",
+    "category": "database",
+    "name": "MariaDB",
+    "version": "11.4.5 LTS",
+    "description": "MySQL 开源社区分支 LTS 版本，100% 兼容 MySQL 协议（默认端口 3309）",
+    "mirrors_cn": [
+      "https://mirrors.tuna.tsinghua.edu.cn/mariadb/mariadb-11.4.5/winx64-packages/mariadb-11.4.5-winx64.zip"
+    ],
+    "mirrors": [
+      "https://archive.mariadb.org/mariadb-11.4.5/winx64-packages/mariadb-11.4.5-winx64.zip"
+    ],
+    "default_port": 3309,
+    "is_service": true,
+    "config_kind": "mysql",
+    "init_cmd": {
+      "program": "{{app_dir}}/bin/mariadb-install-db.exe",
+      "args": ["--datadir={{data_dir}}", "--default-user"]
+    },
+    "start_cmd": {
+      "program": "{{app_dir}}/bin/mariadbd.exe",
+      "args": ["--defaults-file={{conf_file}}", "--console"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/bin/mariadb-admin.exe",
+      "args": ["-u", "root", "-P", "{{port}}", "shutdown"]
+    }
+  },
+  {
+    "id": "mongodb-8.0",
+    "category": "database",
+    "name": "MongoDB",
+    "version": "8.0.5",
+    "description": "主流开源 NoSQL 文档数据库，高性能 JSON/BSON 存储（默认端口 27017）",
+    "mirrors_cn": [
+      "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.5.zip"
+    ],
+    "mirrors": [
+      "https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-8.0.5.zip"
+    ],
+    "default_port": 27017,
+    "is_service": true,
+    "config_kind": "mongodb",
+    "start_cmd": {
+      "program": "{{app_dir}}/bin/mongod.exe",
+      "args": ["--config", "{{conf_file}}"]
+    }
+  },
+  {
+    "id": "redis-7.2",
+    "category": "cache",
+    "name": "Redis (Windows)",
+    "version": "7.2.7",
+    "description": "高性能内存缓存与消息中间件（Windows 原生社区编译版）",
+    "mirrors_cn": [
+      "https://gh-proxy.com/https://github.com/redis-windows/redis-windows/releases/download/7.2.7/Redis-7.2.7-Windows-x64-msys2.zip"
+    ],
+    "mirrors": [
+      "https://github.com/redis-windows/redis-windows/releases/download/7.2.7/Redis-7.2.7-Windows-x64-msys2.zip"
+    ],
+    "default_port": 6379,
+    "is_service": true,
+    "config_kind": "redis",
+    "start_cmd": {
+      "program": "{{app_dir}}/redis-server.exe",
+      "args": ["{{conf_file}}"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/redis-cli.exe",
+      "args": ["-p", "{{port}}", "shutdown", "nosave"]
+    }
+  },
+  {
+    "id": "nginx-1.26",
+    "category": "web",
+    "name": "Nginx",
+    "version": "1.26.3",
+    "description": "高性能 HTTP 与反向代理服务器，内置可视化反向代理与一键 CORS 跨域配置",
+    "mirrors_cn": [
+      "https://mirrors.huaweicloud.com/nginx/nginx-1.26.3.zip"
+    ],
+    "mirrors": [
+      "https://nginx.org/download/nginx-1.26.3.zip"
+    ],
+    "default_port": 80,
+    "is_service": true,
+    "config_kind": "nginx",
+    "start_cmd": {
+      "program": "{{app_dir}}/nginx.exe",
+      "args": ["-p", "{{app_dir}}", "-c", "{{conf_file}}"]
+    },
+    "stop_cmd": {
+      "program": "{{app_dir}}/nginx.exe",
+      "args": ["-p", "{{app_dir}}", "-c", "{{conf_file}}", "-s", "quit"]
+    }
+  },
+  {
+    "id": "nacos-2.4",
+    "category": "middleware",
+    "name": "Nacos",
+    "version": "2.4.3",
+    "description": "微服务注册中心与配置中心（一键单机模式启动）",
+    "mirrors_cn": [
+      "https://gh-proxy.com/https://github.com/alibaba/nacos/releases/download/2.4.3/nacos-server-2.4.3.zip"
+    ],
+    "mirrors": [
+      "https://github.com/alibaba/nacos/releases/download/2.4.3/nacos-server-2.4.3.zip"
+    ],
+    "default_port": 8848,
+    "is_service": true,
+    "config_kind": "nacos",
+    "start_cmd": {
+      "program": "cmd.exe",
+      "args": ["/C", "{{app_dir}}/bin/startup.cmd", "-m", "standalone"]
+    },
+    "stop_cmd": {
+      "program": "cmd.exe",
+      "args": ["/C", "{{app_dir}}/bin/shutdown.cmd"]
+    }
+  },
+  {
+    "id": "mailpit-1.24",
+    "category": "middleware",
+    "name": "Mailpit",
+    "version": "1.24.0",
+    "description": "本地开发 SMTP 邮件捕获器与 Web 预览后台（Web 8025 / SMTP 1025）",
+    "mirrors_cn": [
+      "https://gh-proxy.com/https://github.com/axllent/mailpit/releases/download/v1.24.0/mailpit-windows-amd64.zip"
+    ],
+    "mirrors": [
+      "https://github.com/axllent/mailpit/releases/download/v1.24.0/mailpit-windows-amd64.zip"
+    ],
+    "default_port": 8025,
+    "is_service": true,
+    "config_kind": "mailpit",
+    "start_cmd": {
+      "program": "{{app_dir}}/mailpit.exe",
+      "args": []
+    }
+  },
+  {
+    "id": "tomcat-10.1",
+    "category": "web",
+    "name": "Apache Tomcat",
+    "version": "10.1.36",
+    "description": "经典 Jakarta EE Servlet 容器，适合部署传统 WAR 项目",
+    "mirrors_cn": [
+      "https://mirrors.huaweicloud.com/apache/tomcat/tomcat-10/v10.1.36/bin/apache-tomcat-10.1.36-windows-x64.zip",
+      "https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-10/v10.1.36/bin/apache-tomcat-10.1.36-windows-x64.zip"
+    ],
+    "mirrors": [
+      "https://archive.apache.org/dist/tomcat/tomcat-10/v10.1.36/bin/apache-tomcat-10.1.36-windows-x64.zip"
+    ],
+    "default_port": 8080,
+    "is_service": true,
+    "config_kind": "tomcat",
+    "start_cmd": {
+      "program": "cmd.exe",
+      "args": ["/C", "{{app_dir}}/bin/catalina.bat", "run"]
+    },
+    "stop_cmd": {
+      "program": "cmd.exe",
+      "args": ["/C", "{{app_dir}}/bin/shutdown.bat"]
+    }
+  }
+]
